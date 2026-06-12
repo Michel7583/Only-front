@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply antialiased bg-white dark:bg-surface-900 text-surface-900 dark:text-surface-100;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-x: hidden;
+  }
+
+  #root {
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-area-px {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .page-pad-x {
+    @apply px-4 sm:px-5 md:px-6;
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-lg md:max-w-2xl lg:max-w-3xl;
+  }
+
+  .skeleton-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      rgb(226 232 240 / 0.55) 0%,
+      rgb(241 245 249 / 0.95) 50%,
+      rgb(226 232 240 / 0.55) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+
+  .dark .skeleton-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      rgb(51 65 85 / 0.55) 0%,
+      rgb(71 85 105 / 0.85) 50%,
+      rgb(51 65 85 / 0.55) 100%
+    );
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-surface-200/90 dark:border-surface-700/80 bg-white/90 dark:bg-surface-800/85 backdrop-blur-sm;
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 12px 28px -20px rgb(15 23 42 / 0.18);
+  }
+
+  .dark .surface-card {
+    box-shadow: 0 12px 28px -20px rgb(0 0 0 / 0.45);
+  }
+
+  .hero-glow {
+    background:
+      radial-gradient(120% 90% at 85% -20%, rgb(255 255 255 / 0.22), transparent 50%),
+      linear-gradient(145deg, #0c8ee9 0%, #0070c7 48%, #054c85 100%);
+  }
+}
