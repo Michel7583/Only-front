@@ -81,11 +81,11 @@ export default function Admin() {
     setLoading(true)
     const load = async () => {
       try {
-        if (tab === 'users') setUsers(await api.get('/admin/users'))
-        else if (tab === 'loans') setLoans(await api.get('/admin/loans'))
-        else if (tab === 'risk') setRiskScores(await api.get('/admin/risk-scores'))
-        else if (tab === 'fraud') setFraudAlerts(await api.get('/admin/fraud-alerts'))
-        else setAuditLogs(await api.get('/admin/audit-logs'))
+        if (tab === 'users') setUsers(await api.get<User[]>('/admin/users'))
+        else if (tab === 'loans') setLoans(await api.get<Loan[]>('/admin/loans'))
+        else if (tab === 'risk') setRiskScores(await api.get<RiskScore[]>('/admin/risk-scores'))
+        else if (tab === 'fraud') setFraudAlerts(await api.get<FraudAlert[]>('/admin/fraud-alerts'))
+        else setAuditLogs(await api.get<AuditLog[]>('/admin/audit-logs'))
       } catch {
         // ignore
       } finally {
@@ -100,7 +100,7 @@ export default function Admin() {
   const updateLoanStatus = async (loanId: string, action: string) => {
     try {
       await api.post(`/admin/loans/${loanId}/status`, { action })
-      setLoans(await api.get('/admin/loans'))
+      setLoans(await api.get<Loan[]>('/admin/loans'))
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update loan status')
     }

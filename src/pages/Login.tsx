@@ -31,7 +31,7 @@ export default function Login() {
               Sign in with your wallet
             </p>
             <p className="mt-2 text-sm text-surface-500 dark:text-surface-400 max-w-sm mx-auto leading-relaxed">
-              One short signature. No gas fees, no password to remember.
+              One short signature. Verified in your browser — no backend, no gas fees.
             </p>
           </div>
 
@@ -40,7 +40,7 @@ export default function Login() {
           </div>
 
           <p className="mt-6 text-center text-xs text-surface-400 dark:text-surface-500 animate-login-rise-late">
-            You keep control of your keys — we only verify the signature.
+            You keep control of your keys — we only verify the signature locally.
           </p>
         </div>
       </main>

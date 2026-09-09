@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getAddress } from 'viem'
 import { useAuth } from '../context/AuthContext'
+import { createSignInMessage } from '../services/walletAuth'
 
 export interface EthereumProvider {
   request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
@@ -227,22 +228,15 @@ export function useWalletConnect(onSuccess?: () => void) {
         current = 'signing'
         setStage('signing')
 
-        const nonceRes = await fetch('/api/auth/nonce', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address }),
-        })
-        if (!nonceRes.ok) throw new Error('Failed to get sign-in request')
-        const { nonce } = await nonceRes.json()
-
+        const message = createSignInMessage(address, 'evm')
         const signature = (await provider.request({
           method: 'personal_sign',
-          params: [nonce, address],
+          params: [message, address],
         })) as string
 
         current = 'verifying'
         setStage('verifying')
-        await loginWithWallet(address, nonce, signature)
+        await loginWithWallet(address, message, signature, 'evm')
         setStage('done')
         onSuccess?.()
       } catch (err) {
@@ -266,15 +260,8 @@ export function useWalletConnect(onSuccess?: () => void) {
         current = 'signing'
         setStage('signing')
 
-        const nonceRes = await fetch('/api/auth/nonce', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ address }),
-        })
-        if (!nonceRes.ok) throw new Error('Failed to get sign-in request')
-        const { nonce } = await nonceRes.json()
-
-        const msg = new TextEncoder().encode(nonce)
+        const message = createSignInMessage(address, 'solana')
+        const msg = new TextEncoder().encode(message)
         const res = provider.request
           ? await provider.request({ method: 'signMessage', params: { message: msg, display: 'utf8' } })
           : await (provider.signMessage?.(msg, 'utf8') ?? Promise.reject(new Error('signMessage not supported')))
@@ -282,7 +269,7 @@ export function useWalletConnect(onSuccess?: () => void) {
 
         current = 'verifying'
         setStage('verifying')
-        await loginWithWallet(address, nonce, signatureB64)
+        await loginWithWallet(address, message, signatureB64, 'solana')
         setStage('done')
         onSuccess?.()
       } catch (err) {

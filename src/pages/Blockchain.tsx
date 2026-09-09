@@ -44,7 +44,7 @@ export default function Blockchain() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    api.get('/blockchain/me')
+    api.get<ChainData>('/blockchain/me')
       .then(setData)
       .catch((err) => setError(err instanceof Error ? err.message : "Couldn't load this page"))
       .finally(() => setLoading(false))

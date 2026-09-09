@@ -1,20 +1,24 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
-import { api } from '../services/api'
-
-interface User {
-  id: string
-  walletAddress?: string | null
-  email?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  role: string
-}
+import {
+  AuthUser,
+  WalletChain,
+  clearSession,
+  loadSession,
+  saveSession,
+  userFromWallet,
+  verifyWalletSignature,
+} from '../services/walletAuth'
 
 interface AuthContextType {
-  user: User | null
+  user: AuthUser | null
   accessToken: string | null
   loading: boolean
-  loginWithWallet: (address: string, message: string, signature: string) => Promise<void>
+  loginWithWallet: (
+    address: string,
+    message: string,
+    signature: string,
+    chain: WalletChain
+  ) => Promise<void>
   logout: () => Promise<void>
   refreshAuth: () => Promise<void>
 }
@@ -22,60 +26,44 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('accessToken'))
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const refreshAuth = useCallback(async () => {
-    const token = localStorage.getItem('accessToken')
-    if (!token) {
+    const session = loadSession()
+    if (!session) {
       setUser(null)
       setAccessToken(null)
       setLoading(false)
       return
     }
-    try {
-      const me = await api.get('/auth/me')
-      setUser(me)
-    } catch {
-      localStorage.removeItem('accessToken')
-      setUser(null)
-      setAccessToken(null)
-    } finally {
-      setLoading(false)
-    }
+    setUser(session.user)
+    setAccessToken(session.token)
+    setLoading(false)
   }, [])
 
   useEffect(() => {
-    if (!accessToken) {
-      refreshAuth()
-      return
-    }
-    api.get('/auth/me')
-      .then(setUser)
-      .catch(refreshAuth)
-      .finally(() => setLoading(false))
-  }, [accessToken, refreshAuth])
+    refreshAuth()
+  }, [refreshAuth])
 
-  const loginWithWallet = async (address: string, message: string, signature: string) => {
-    const res = await fetch('/api/auth/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, message, signature }),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error((err as { error?: string }).error || 'Wallet sign-in failed')
-    }
-    const data = await res.json()
-    const token = data.accessToken ?? data.token
-    localStorage.setItem('accessToken', token)
-    setAccessToken(token)
-    setUser(data.user)
+  const loginWithWallet = async (
+    address: string,
+    message: string,
+    signature: string,
+    chain: WalletChain
+  ) => {
+    const ok = await verifyWalletSignature({ address, message, signature, chain })
+    if (!ok) throw new Error('Invalid wallet signature')
+
+    const nextUser = userFromWallet(address, chain)
+    const session = saveSession(nextUser)
+    setUser(session.user)
+    setAccessToken(session.token)
   }
 
   const logout = async () => {
-    localStorage.removeItem('accessToken')
+    clearSession()
     setUser(null)
     setAccessToken(null)
   }

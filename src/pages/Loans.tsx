@@ -51,7 +51,7 @@ export default function Loans() {
   const loadEligibility = () => {
     setEligibilityLoading(true)
     setEligibilityError(null)
-    api.get('/loans/eligibility')
+    api.get<Eligibility>('/loans/eligibility')
       .then(setEligibility)
       .catch((err) => {
         setEligibility(null)
@@ -61,7 +61,7 @@ export default function Loans() {
   }
 
   const loadLoans = () => {
-    api.get('/loans').then(setLoans).catch(() => setLoans([]))
+    api.get<LoanRecord[]>('/loans').then(setLoans).catch(() => setLoans([]))
   }
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function Loans() {
     setLoading(true)
     setAppliedMsg(null)
     try {
-      const result = await api.post('/loans/apply', {
+      const result = await api.post<{ message?: string }>('/loans/apply', {
         amount: parseFloat(applyForm.amount),
         termMonths: parseInt(applyForm.termMonths, 10),
       })

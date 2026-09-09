@@ -4,12 +4,10 @@ node_modules/
 # Build output
 dist/
 build/
+*.tsbuildinfo
 
 # Environment
 .env
-
-# SQLite database
-server/prisma/dev.db
 .env.local
 .env.*.local
 
